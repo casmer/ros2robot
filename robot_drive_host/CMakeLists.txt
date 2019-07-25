@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(lalosoft_robot_drive_host)
-
+set(robot_msgs_DIR "/home/casmer/harvey_robot_ws/install/share/robot_msgs/cmake")
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
@@ -14,10 +14,12 @@ find_package(WiringPi REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(robot_msgs REQUIRED)
 
+ament_export_dependencies(rosidl_default_runtime)
 
 add_executable(drive_host robot_drive_host.cpp motor_hat/ugeek_motor_hat.cpp motor_hat/ugeek_motor_hat.hpp)
-ament_target_dependencies(drive_host rclcpp std_msgs WiringPi)
+ament_target_dependencies(drive_host rclcpp std_msgs robot_msgs WiringPi)
 target_link_libraries(drive_host ${WIRINGPI_LIBRARIES})
 
 
