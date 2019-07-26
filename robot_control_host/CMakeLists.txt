@@ -13,13 +13,14 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(robot_msgs REQUIRED)
 
 ament_export_dependencies(rosidl_default_runtime)
 
 
 add_executable(control_host robot_control_host.cpp)
-ament_target_dependencies(control_host rclcpp std_msgs robot_msgs)
+ament_target_dependencies(control_host rclcpp std_msgs sensor_msgs robot_msgs)
 
 
 install(TARGETS
