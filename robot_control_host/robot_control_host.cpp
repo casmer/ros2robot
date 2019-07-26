@@ -18,7 +18,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "sensor_msgs/msg/joy.hpp"
-
+#include "robot_msgs/msg/drive_message.hpp"
+#include "xboxc_constants.hpp"
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
@@ -32,32 +33,58 @@ public:
 	RobotControlHost()
   : Node("RobotControlHost"), count_(0)
   {
-    publisher_ = this->create_publisher<std_msgs::msg::String>("LalosoftDriveCommand", 10);
+    publisher_ = this->create_publisher<robot_msgs::msg::DriveMessage>("LalosoftDriveCommand", 10);
 
     subscription_ = this->create_subscription<sensor_msgs::msg::Joy>(
           "/joy", 10, std::bind(&RobotControlHost::joy_callback, this, _1));
 
-
     timer_ = this->create_wall_timer(
-      500ms, std::bind(&RobotControlHost::timer_callback, this));
+      5000ms, std::bind(&RobotControlHost::timer_callback, this));
   }
 
 private:
   void timer_callback()
   {
-    auto message = std_msgs::msg::String();
-    message.data = "Hello, world! " + std::to_string(count_++);
-    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
-    publisher_->publish(message);
+    // auto message = robot_msgs::msg::DriveMessage();
+
+//    message.data = "Hello, world! " + std::to_string(count_++);
+//    RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
+//    publisher_->publish(message);
+	  RCLCPP_INFO(this->get_logger(), "Robot Control Host is Alive.");
   }
 
   void joy_callback(const sensor_msgs::msg::Joy::SharedPtr msg)
 	{
-	  RCLCPP_INFO(this->get_logger(), "I heard: '%d'", msg->axes[0]);
+	  float Xraw, Yraw, X, Y, R, L, V, W;
+	  Xraw = msg->axes[XBOX_ANALOG_LEFT_JOY_X];
+	  Yraw = msg->axes[XBOX_ANALOG_LEFT_JOY_Y];
+	  //Smooth Load and high end.
+	  if (abs(Yraw)>=.999)
+		  Xraw=0;
+	  if (abs(Yraw)<=.2)
+		  Yraw=0;
+	  if (abs(Xraw)>=.999)
+		  Yraw=0;
+	  if (abs(Xraw)<=.2)
+		  Xraw=0;
+	  //Scale the value
+	  X = Xraw*100;
+	  Y = Yraw*100;
+
+	  //get the number
+	  V =(100-abs(X)) * (Y/100) + Y;
+	  W= (100-abs(Y)) * (X/100) + X;
+	  R = (V+W) /2;
+	  L= (V-W)/2;
+	  auto message = robot_msgs::msg::DriveMessage();
+	  message.right_motor_speed = R;
+	  message.left_motor_speed = L;
+	  publisher_->publish(message);
+	  RCLCPP_DEBUG(this->get_logger(), "Xraw='%1.3f', Yraw='%1.3f',\n X='%1.3f', Y='%1.3f',\n V='%1.3f', W='%1.3f',\n R='%1.3f', L='%1.3f'",Xraw, Yraw, X, Y, V, W, R, L );
 	}
 
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
+  rclcpp::Publisher<robot_msgs::msg::DriveMessage>::SharedPtr publisher_;
   rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr subscription_;
   size_t count_;
 };
