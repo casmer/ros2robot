@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(lalosoft_robot_drive_host)
-set(robot_msgs_DIR "/home/casmer/harvey_robot_ws/install/share/robot_msgs/cmake")
+set(robot_msgs_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../install/share/robot_msgs/cmake")
 # Default to C++14
 if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
