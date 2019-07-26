@@ -28,8 +28,22 @@
 #define __INVRT              0x10
 #define __OUTDRV             0x04
 
+#define PWM_FREQUENCY   1600.0
+#define PWM_PRESCALE    0xFE
 
 
+#define PWM_MODE1       0x00
+#define PWM_MODE2       0x01
+#define PWM_LED0_ON_L   0x06
+#define PWM_LED0_ON_H   0x07
+#define PWM_LED0_OFF_L  0x08
+#define PWM_LED0_OFF_H  0x09
+
+#define PWM_RESTART     0x80
+#define PWM_SLEEP       0x10
+#define PWM_ALLCALL     0x01
+#define PWM_INVRT       0x10
+#define PWM_OUTDRV      0x04
 
 UGeek_Motor_Hat::UGeek_Motor_Hat(unsigned int addr)
 : _i2cAddr(addr),
@@ -50,17 +64,42 @@ UGeek_Motor_Hat::~UGeek_Motor_Hat()
 
 bool UGeek_Motor_Hat::initialize()
 {
+
 	bool result = true;
-	_i2cDeviceHandle = wiringPiI2CSetup (_i2cAddr);
+
+	_i2cDeviceHandle = wiringPiI2CSetupInterface("/dev/i2c-1", _i2cAddr);
+	printf("device handle = %d\n",_i2cDeviceHandle);
 	if (_i2cDeviceHandle <0)
+	{
 		result = false;
+	} else
+	{
+		 //Setup PWM
+		setAllPwm(_i2cDeviceHandle, 0, 0);
+		wiringPiI2CWriteReg8(_i2cDeviceHandle, PWM_MODE2, PWM_OUTDRV);
+		wiringPiI2CWriteReg8(_i2cDeviceHandle, PWM_MODE1, PWM_ALLCALL);
+		usleep(5);
+		unsigned short mode1 = wiringPiI2CReadReg8(_i2cDeviceHandle, PWM_MODE1) & ~PWM_SLEEP;
+		wiringPiI2CWriteReg8(_i2cDeviceHandle, PWM_MODE1, mode1);
+		usleep(5);
+
+		//Set PWM frequency
+		unsigned short prescale = (int)(25000000.0 / 4096.0 / PWM_FREQUENCY - 1.0);
+		unsigned short oldmode = wiringPiI2CReadReg8(_i2cDeviceHandle, PWM_MODE1);
+		unsigned short newmode = (oldmode & 0x7F) | 0x10;
+		wiringPiI2CWriteReg8(_i2cDeviceHandle, PWM_MODE1, newmode);
+		wiringPiI2CWriteReg8(_i2cDeviceHandle, PWM_PRESCALE, prescale);
+		wiringPiI2CWriteReg8(_i2cDeviceHandle, PWM_MODE1, oldmode);
+		usleep(5);
+		wiringPiI2CWriteReg8(_i2cDeviceHandle, PWM_MODE1, oldmode | 0x80);
+	}
 
 	return result;
 }
-bool UGeek_Motor_Hat::setPin(int pinNumber, int value)
+bool UGeek_Motor_Hat::setPin(unsigned short pinNumber, unsigned short value)
 {
 	bool success=true;
-	if (pinNumber<0 || pinNumber>15)
+	if ( pinNumber>15) //implied pinNumber<0 ||
 	{
 		return false;
 	}
@@ -78,11 +117,19 @@ bool UGeek_Motor_Hat::setPin(int pinNumber, int value)
 	}
 	return success;
 }
-bool UGeek_Motor_Hat::setPwm(int pinNumber, int onValue, int offValue)
+void UGeek_Motor_Hat::setAllPwm(unsigned short i2c, unsigned short on, unsigned short off)
+{
+        wiringPiI2CWriteReg8(i2c, __LED0_ON_L, on & 0xFF);
+        wiringPiI2CWriteReg8(i2c, __LED0_ON_H, on >> 8);
+        wiringPiI2CWriteReg8(i2c, __LED0_OFF_L, off & 0xFF);
+        wiringPiI2CWriteReg8(i2c, __LED0_OFF_H, off >> 8);
+}
+bool UGeek_Motor_Hat::setPwm(unsigned short pinNumber, unsigned short onValue, unsigned short offValue)
 {
 	bool success=false;
 	if (pinNumber>0 && pinNumber<=15)
 	{
+		printf("writing values:fd:%d, %d, on:%d, off: %d\n",_i2cDeviceHandle, pinNumber, onValue, offValue);
 	success =
 		(
 		(0==wiringPiI2CWriteReg8(_i2cDeviceHandle,__LED0_ON_L+4*pinNumber, onValue & 0xFF))
@@ -93,7 +140,7 @@ bool UGeek_Motor_Hat::setPwm(int pinNumber, int onValue, int offValue)
 	}
 	return success;
 }
-bool UGeek_Motor_Hat::runMotor(int motorNum, MOTOR_DRIVE_t  command)
+bool UGeek_Motor_Hat::runMotor(unsigned short motorNum, MOTOR_DRIVE_t  command)
 {
 	bool success = true;
 	if (motorNum>MAX_MOTOR || motorNum<MIN_MOTOR)
@@ -128,7 +175,7 @@ bool UGeek_Motor_Hat::runMotor(int motorNum, MOTOR_DRIVE_t  command)
 
 }
 
-bool UGeek_Motor_Hat::setMotorSpeed(int motorNum, int speed)
+bool UGeek_Motor_Hat::setMotorSpeed(unsigned short motorNum, unsigned short speed)
 {
 	bool success=true;
 	if (motorNum>MAX_MOTOR || motorNum<MIN_MOTOR)
@@ -137,10 +184,10 @@ bool UGeek_Motor_Hat::setMotorSpeed(int motorNum, int speed)
 	}
 	else
 	{
-		if (speed<0)
-		{
-			speed=0;
-		}
+//		if (speed<0)
+//		{
+//			speed=0;
+//		}
 		if (speed>255)
 		{
 			speed=255;
