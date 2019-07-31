@@ -26,11 +26,4 @@ def generate_launch_description():
     return launch.LaunchDescription([
         server,
         client,
-        # TODO(wjwwood): replace this with a `required=True|False` option on ExecuteProcess().
-        # Shutdown launch when client exits.
-        launch.actions.RegisterEventHandler(
-            event_handler=launch.event_handlers.OnProcessExit(
-                target_action=client,
-                on_exit=[launch.actions.EmitEvent(event=launch.events.Shutdown())],
-            )),
     ])
