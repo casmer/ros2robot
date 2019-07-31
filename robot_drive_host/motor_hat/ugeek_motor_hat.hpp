@@ -1,7 +1,7 @@
 
 #include <stdint.h>
 #include <wiringPiI2C.h>
-
+#define TRACE_MOTOR_HAT 1
 class UGeek_Motor_Hat
 {
 
