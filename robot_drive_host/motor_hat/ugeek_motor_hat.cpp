@@ -68,7 +68,10 @@ bool UGeek_Motor_Hat::initialize()
 	bool result = true;
 
 	_i2cDeviceHandle = wiringPiI2CSetupInterface("/dev/i2c-1", _i2cAddr);
+#if TRACE_MOTOR_HAT
 	printf("device handle = %d\n",_i2cDeviceHandle);
+#endif
+
 	if (_i2cDeviceHandle <0)
 	{
 		result = false;
@@ -129,7 +132,9 @@ bool UGeek_Motor_Hat::setPwm(unsigned short pinNumber, unsigned short onValue, u
 	bool success=false;
 	if (pinNumber>0 && pinNumber<=15)
 	{
+#if TRACE_MOTOR_HAT
 		printf("writing values:fd:%d, %d, on:%d, off: %d\n",_i2cDeviceHandle, pinNumber, onValue, offValue);
+#endif
 	success =
 		(
 		(0==wiringPiI2CWriteReg8(_i2cDeviceHandle,__LED0_ON_L+4*pinNumber, onValue & 0xFF))
@@ -184,10 +189,6 @@ bool UGeek_Motor_Hat::setMotorSpeed(unsigned short motorNum, unsigned short spee
 	}
 	else
 	{
-//		if (speed<0)
-//		{
-//			speed=0;
-//		}
 		if (speed>255)
 		{
 			speed=255;

@@ -13,13 +13,16 @@
 // limitations under the License.
 
 #include <memory>
-
+#include <chrono>
+#include <mutex>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "motor_hat/ugeek_motor_hat.hpp"
 #include "robot_msgs/msg/drive_message.hpp"
+#include "SimpleTimer.hpp"
 
 using std::placeholders::_1;
+using namespace std::chrono_literals;
 
 class RobotDriveHost : public rclcpp::Node
 {
@@ -36,12 +39,23 @@ public:
 		{
 			RCLCPP_ERROR(get_logger(), "Motor HAT failed to Initialize!");
 		}
+		driveCheck_ = this->create_wall_timer(
+				500ms, std::bind(&RobotDriveHost::timer_callback, this));
 }
-
+	~RobotDriveHost()
+	{
+		setMotor(0, 0);
+		setMotor(1, 0);
+	}
 private:
 
 	rclcpp::Subscription<robot_msgs::msg::DriveMessage>::SharedPtr subscription_;
 	UGeek_Motor_Hat _motorHat;
+	std::mutex _motorSpeedLock;
+	SystemSimpleTimer _timer;
+	rclcpp::TimerBase::SharedPtr driveCheck_;
+	int _leftMotorSpeed;
+	int _rightMotorSpeed;
 
 	void setMotor(int number, int motor_speed)
 	{
@@ -78,11 +92,32 @@ private:
 		}
 
 	}
-	void topic_callback(const robot_msgs::msg::DriveMessage::SharedPtr msg)
+
+	void topic_callback(const robot_msgs::msg::DriveMessage::SharedPtr message)
 	{
-		RCLCPP_INFO(this->get_logger(), "Left: '%d', Right: '%d'",msg->left_motor_speed, msg->right_motor_speed);
-		setMotor(0, msg->right_motor_speed);
-		setMotor(1, msg->left_motor_speed);
+		RCLCPP_INFO(this->get_logger(), "Left: '%d', Right: '%d'",message->left_motor_speed, message->right_motor_speed);
+		std::lock_guard<std::mutex> lock (_motorSpeedLock);
+		_timer.reset();
+		_leftMotorSpeed = message->left_motor_speed;
+		_rightMotorSpeed = message->right_motor_speed;
+		setMotor(0, message->right_motor_speed);
+		setMotor(1, message->left_motor_speed);
+
+	}
+
+	void timer_callback()
+	{
+		std::lock_guard<std::mutex> lock (_motorSpeedLock);
+		unsigned int actual_wait_time = _timer.elapsed_time<unsigned int, std::chrono::milliseconds>();
+		if (actual_wait_time > 500 && (_leftMotorSpeed!=0 && _rightMotorSpeed!=0))
+		{
+			RCLCPP_INFO(this->get_logger(), "No new command message, stopping motors.");
+			setMotor(0, 0);
+			setMotor(1, 0);
+			_leftMotorSpeed=0;
+			_rightMotorSpeed=0;
+		}
+
 	}
 };
 
