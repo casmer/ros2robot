@@ -17,7 +17,7 @@
 #include <mutex>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "motor_hat/ugeek_motor_hat.hpp"
+#include "pwm/pca6895.hpp"
 #include "robot_msgs/msg/drive_message.hpp"
 #include "robot_msgs/msg/pan_tilt.hpp"
 #include "SimpleTimer.hpp"
@@ -38,7 +38,7 @@ public:
 				"LalosoftPanTilt", 10, std::bind(&RobotDriveHost::pantilt_callback, this, _1));
 
 		RCLCPP_INFO(get_logger(), "Setting severity threshold to DEBUG");
-		if (!_motorHat.initialize())
+		if (!_pca6895.initialize())
 		{
 			RCLCPP_ERROR(get_logger(), "Motor HAT failed to Initialize!");
 		}
@@ -54,8 +54,8 @@ private:
 
 	rclcpp::Subscription<robot_msgs::msg::DriveMessage>::SharedPtr subscription_;
 	rclcpp::Subscription<robot_msgs::msg::PanTilt>::SharedPtr pantilt_subscription_;
-	UGeek_Motor_Hat _motorHat;
 	std::mutex _motorSpeedLock;
+	PCA6895 _pca6895;
 	SystemSimpleTimer _timer;
 	rclcpp::TimerBase::SharedPtr driveCheck_;
 	int _leftMotorSpeed;
@@ -65,37 +65,40 @@ private:
 
 	void setMotor(int number, int motor_speed)
 	{
-		if (motor_speed==0)
-		{
-			if (!_motorHat.runMotor(number,UGeek_Motor_Hat::MOTOR_DRIVE::RELEASE))
-			{
-				RCLCPP_ERROR(get_logger(), "run motor failed!");
-			}
-			if (!_motorHat.setMotorSpeed(number, 0))
-			{
-				RCLCPP_ERROR(get_logger(), "set motor speed failed!");
-			}
-		} else if (motor_speed > 0)
-		{
-			if (!_motorHat.runMotor(number,UGeek_Motor_Hat::MOTOR_DRIVE::FORWARD))
-			{
-				RCLCPP_ERROR(get_logger(), "run motor failed!");
-			}
-			if (!_motorHat.setMotorSpeed(number, motor_speed*255/100))
-			{
-				RCLCPP_ERROR(get_logger(), "set motor speed failed!");
-			}
-		} else if (motor_speed<0)
-		{
-			if (!_motorHat.runMotor(number,UGeek_Motor_Hat::MOTOR_DRIVE::BACKWARD))
-			{
-				RCLCPP_ERROR(get_logger(), "run motor failed!");
-			}
-			if (!_motorHat.setMotorSpeed(number, abs(motor_speed)*255/100))
-			{
-				RCLCPP_ERROR(get_logger(), "set motor speed failed!");
-			}
-		}
+		number = number+5;
+		motor_speed = number;
+		number = motor_speed;
+//		if (motor_speed==0)
+//		{
+//			if (!_motorHat.runMotor(number,UGeek_Motor_Hat::MOTOR_DRIVE::RELEASE))
+//			{
+//				RCLCPP_ERROR(get_logger(), "run motor failed!");
+//			}
+//			if (!_motorHat.setMotorSpeed(number, 0))
+//			{
+//				RCLCPP_ERROR(get_logger(), "set motor speed failed!");
+//			}
+//		} else if (motor_speed > 0)
+//		{
+//			if (!_motorHat.runMotor(number,UGeek_Motor_Hat::MOTOR_DRIVE::FORWARD))
+//			{
+//				RCLCPP_ERROR(get_logger(), "run motor failed!");
+//			}
+//			if (!_motorHat.setMotorSpeed(number, motor_speed*255/100))
+//			{
+//				RCLCPP_ERROR(get_logger(), "set motor speed failed!");
+//			}
+//		} else if (motor_speed<0)
+//		{
+//			if (!_motorHat.runMotor(number,UGeek_Motor_Hat::MOTOR_DRIVE::BACKWARD))
+//			{
+//				RCLCPP_ERROR(get_logger(), "run motor failed!");
+//			}
+//			if (!_motorHat.setMotorSpeed(number, abs(motor_speed)*255/100))
+//			{
+//				RCLCPP_ERROR(get_logger(), "set motor speed failed!");
+//			}
+//		}
 
 	}
 

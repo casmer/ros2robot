@@ -72,7 +72,7 @@ bool PCA6895::initialize()
 	bool result = true;
 
 	_i2cDeviceHandle = wiringPiI2CSetupInterface("/dev/i2c-1", _i2cAddr);
-#if TRACE_MOTOR_HAT
+#if TRACE_PCA6895
 	printf("device handle = %d\n",_i2cDeviceHandle);
 #endif
 
@@ -116,7 +116,7 @@ bool PCA6895::setPwm(unsigned short pinNumber, unsigned short onValue, unsigned 
 	bool success=false;
 	if (pinNumber>0 && pinNumber<=15)
 	{
-#if TRACE_MOTOR_HAT
+#if TRACE_PCA6895
 		printf("writing values:fd:%d, %d, on:%d, off: %d\n",_i2cDeviceHandle, pinNumber, onValue, offValue);
 #endif
 	success =
