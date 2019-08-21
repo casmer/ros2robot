@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <wiringPiI2C.h>
 #define TRACE_MOTOR_HAT 0
-class UGeek_Motor_Hat
+class PCA6895
 {
 
 public:
@@ -24,20 +24,20 @@ public:
 	const int MAX_MOTOR=3;
 	const int MIN_MOTOR=0;
 
-	UGeek_Motor_Hat(unsigned int  addr = 0x6f);
-	~UGeek_Motor_Hat();
+	PCA6895(unsigned int  addr = 0x6f);
+	~PCA6895();
 
 
 	bool initialize();
-	bool runMotor(unsigned short motorNum, MOTOR_DRIVE_t  command);
-    bool setMotorSpeed(unsigned short motorNum, unsigned short speed);
+	bool setPwmAsAngle(unsigned short pinNumber, unsigned short angle);
 private:
-	const unsigned short _pwmPin[4] = {8,13,2,7};
-	const unsigned short _in2Pin[4] = {9,12,3,6};
-	const unsigned short _in1Pin[4] = {10,11,4,5};
-	bool setPin(unsigned short pinNumber, unsigned short value);
+
 	void setAllPwm(unsigned short i2c, unsigned short on, unsigned short off);
 	bool setPwm(unsigned short pinNumber, unsigned short onValue, unsigned short offValue);
+
+	short range_map(short  x,short  in_min,short  in_max,short  out_min,short  out_max);
+	short angle_to_analog(short angle);
+
 	unsigned int _i2cAddr;
 	int _i2cDeviceHandle;
 };

@@ -1,0 +1,2 @@
+int32 vertical_angle
+int32 hortizontal_angle
