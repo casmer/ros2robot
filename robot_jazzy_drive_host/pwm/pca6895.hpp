@@ -7,7 +7,7 @@ class PCA6895
 
 public:
 
-	PCA6895(unsigned int  addr = 0x40);
+	PCA6895(unsigned int  addr = 0x70);
 	~PCA6895();
 
 

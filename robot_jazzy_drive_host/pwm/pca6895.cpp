@@ -114,7 +114,7 @@ void PCA6895::setAllPwm(unsigned short i2c, unsigned short on, unsigned short of
 bool PCA6895::setPwm(unsigned short pinNumber, unsigned short onValue, unsigned short offValue)
 {
 	bool success=false;
-	if (pinNumber>0 && pinNumber<=15)
+	if ( pinNumber<=15)
 	{
 #if TRACE_PCA6895
 		printf("writing values:fd:%d, %d, on:%d, off: %d\n",_i2cDeviceHandle, pinNumber, onValue, offValue);
@@ -137,20 +137,26 @@ short PCA6895::range_map(short  x,short  in_min,short  in_max,
 
 short PCA6895::angle_to_analog(short angle)
 {
-	short pulse_wide =0;
+	unsigned int pulse_wide =0;
 	short	analog_value =0;
 
 	pulse_wide =	range_map(angle, 0, 180, PWM_MIN_PULSE_WIDTH, PWM_MAX_PULSE_WIDTH);
-	analog_value = pulse_wide / 1000000 * PWM_FREQUENCY * 4096;
+	analog_value = ((unsigned int)pulse_wide) * PWM_FREQUENCY * 4096 / 1000000 ;
+#if TRACE_PCA6895
+	printf("writing values:pulse_wide: %d, analog_value:%d\n", pulse_wide, analog_value);
+#endif
 	return analog_value;
 }
 
 bool PCA6895::setPwmAsAngle(unsigned short pinNumber, unsigned short angle)
 {
 	bool success=false;
-	if (pinNumber>0 && pinNumber<=15)
+	if ( pinNumber<=15)
 	{
 		unsigned short analog_angle = angle_to_analog(angle);
+#if TRACE_PCA6895
+		printf("writing values:pin: %d, angle:%d, analog_angle: %d\n", pinNumber, angle, analog_angle);
+#endif
 		setPwm(pinNumber, 0, analog_angle);
 	}
 	return success;
