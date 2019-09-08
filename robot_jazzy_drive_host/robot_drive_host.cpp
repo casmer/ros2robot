@@ -37,6 +37,7 @@ public:
 		pantilt_subscription_ = this->create_subscription<robot_msgs::msg::PanTilt>(
 				"LalosoftPanTilt", 10, std::bind(&RobotDriveHost::pantilt_callback, this, _1));
 
+
 		RCLCPP_INFO(get_logger(), "Setting severity threshold to DEBUG");
 		if (!_pca6895.initialize())
 		{
@@ -44,12 +45,18 @@ public:
 		}
 		driveCheck_ = this->create_wall_timer(
 				500ms, std::bind(&RobotDriveHost::timer_callback, this));
+
+
 }
 	~RobotDriveHost()
 	{
 		setMotor(0, 0);
 		setMotor(1, 0);
 	}
+	const int PAN_MIN_HORIZONTAL_ANGLE = 0;
+	const int PAN_MAX_HORIZONTAL_ANGLE =  180;
+	const int PAN_MIN_VERTICAL_ANGLE   = 0;
+	const int PAN_MAX_VERTICAL_ANGLE   =  180;
 private:
 
 	rclcpp::Subscription<robot_msgs::msg::DriveMessage>::SharedPtr subscription_;
@@ -68,6 +75,13 @@ private:
 		number = number+5;
 		motor_speed = number;
 		number = motor_speed;
+		if (motor_speed==0)
+		{
+
+		} else
+		{
+
+		}
 //		if (motor_speed==0)
 //		{
 //			if (!_motorHat.runMotor(number,UGeek_Motor_Hat::MOTOR_DRIVE::RELEASE))
@@ -104,9 +118,15 @@ private:
 
 	void topic_callback(const robot_msgs::msg::DriveMessage::SharedPtr message)
 	{
-		RCLCPP_INFO(this->get_logger(), "Left: '%d', Right: '%d'",message->left_motor_speed, message->right_motor_speed);
+
 		std::lock_guard<std::mutex> lock (_motorSpeedLock);
 		_timer.reset();
+		if ((_leftMotorSpeed != message->left_motor_speed) ||
+				(_rightMotorSpeed != message->right_motor_speed))
+		{
+			RCLCPP_INFO(this->get_logger(), "Left: '%d', Right: '%d'",message->left_motor_speed, message->right_motor_speed);
+		}
+
 		_leftMotorSpeed = message->left_motor_speed;
 		_rightMotorSpeed = message->right_motor_speed;
 		setMotor(0, message->right_motor_speed);
@@ -116,11 +136,33 @@ private:
 
 	void pantilt_callback(const robot_msgs::msg::PanTilt::SharedPtr message)
 	{
-		RCLCPP_INFO(this->get_logger(), "hortizontal_angle: '%d', vertical_angle: '%d'",message->hortizontal_angle, message->vertical_angle);
+		if ((_pan_horizontal_angle != message->hortizontal_angle) ||
+						(_pan_vertical_angle != message->vertical_angle))
+		{
+			RCLCPP_INFO(this->get_logger(), "hortizontal_angle: '%d', vertical_angle: '%d'",message->hortizontal_angle, message->vertical_angle);
+		}
 
 		_pan_horizontal_angle = message->hortizontal_angle;
 		_pan_vertical_angle = message->vertical_angle;
 
+
+		if (_pan_horizontal_angle<PAN_MIN_HORIZONTAL_ANGLE)
+		{
+			_pan_horizontal_angle=PAN_MIN_HORIZONTAL_ANGLE;
+		} else if (_pan_horizontal_angle>PAN_MAX_HORIZONTAL_ANGLE)
+		{
+			_pan_horizontal_angle=PAN_MAX_HORIZONTAL_ANGLE;
+		}
+		if (_pan_vertical_angle<PAN_MIN_VERTICAL_ANGLE)
+		{
+			_pan_vertical_angle=PAN_MIN_VERTICAL_ANGLE;
+		} else if (_pan_vertical_angle>PAN_MAX_VERTICAL_ANGLE)
+		{
+			_pan_vertical_angle=PAN_MAX_VERTICAL_ANGLE;
+		}
+
+		_pca6895.setPwmAsAngle(0, _pan_horizontal_angle);
+		_pca6895.setPwmAsAngle(1, _pan_vertical_angle);
 	}
 
 	void timer_callback()
