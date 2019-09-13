@@ -75,8 +75,9 @@ private:
 
 	void pantilt_timer_callback()
 	{
+		std::lock_guard<std::mutex> lock (_panTiltSpeedLock);
 		{
-			std::lock_guard<std::mutex> lock (_panTiltSpeedLock);
+
 			_pan_horizontal_angle+=_pan_horizontal_speed;
 			_pan_vertical_angle += _pan_vertical_speed;
 		}
@@ -128,8 +129,13 @@ private:
 				pan_Yraw=0;
 			//SPEED ADJUSTMENT WOULD BE HERE
 			std::lock_guard<std::mutex> lock (_panTiltSpeedLock);
-			_pan_horizontal_speed = -pan_Xraw*4.0;
+			_pan_horizontal_speed = pan_Xraw*4.0;
 			_pan_vertical_speed = pan_Yraw*4.0;
+			if (msg->buttons[XBOX_DIGITAL_BUTTON_RIGHT_JOY]==1)
+			{
+				_pan_horizontal_angle =110;
+			    _pan_vertical_angle = 110;
+			}
 		}
 		Xraw = msg->axes[XBOX_ANALOG_LEFT_JOY_X];
 		Yraw = msg->axes[XBOX_ANALOG_LEFT_JOY_Y];
