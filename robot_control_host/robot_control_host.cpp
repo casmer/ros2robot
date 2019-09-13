@@ -46,6 +46,7 @@ public:
 				20ms, std::bind(&RobotControlHost::pantilt_timer_callback, this));
 		_pan_horizontal_angle =110;
 		_pan_vertical_angle = 110;
+		_speedFactor =1;
 }
 
 private:
@@ -67,6 +68,9 @@ private:
 	float _pan_vertical_speed;
 	int last_send_horizontal_angle;
 	int last_send_vertical_angle;
+	const float SPEED_FACTOR_MIN = .1;
+	const float SPEED_FACTOR_MAX = 1;
+	float _speedFactor;
 	float range_map(float  x,float  in_min,float  in_max,
 			float  out_min,float  out_max)
 	{
@@ -137,6 +141,22 @@ private:
 			    _pan_vertical_angle = 110;
 			}
 		}
+		if (msg->buttons[XBOX_DIGITAL_BUTTON_DPAD_DOWN]==1)
+		{
+			if (_speedFactor > SPEED_FACTOR_MIN)
+			{
+				_speedFactor -=.1;
+				RCLCPP_INFO(this->get_logger(), "Speed Factor='%1.2f'", _speedFactor);
+			}
+		}
+		if (msg->buttons[XBOX_DIGITAL_BUTTON_DPAD_UP]==1)
+		{
+			if (_speedFactor < SPEED_FACTOR_MAX)
+			{
+				_speedFactor +=.1;
+				RCLCPP_INFO(this->get_logger(), "Speed Factor='%1.2f'", _speedFactor);
+			}
+		}
 		Xraw = msg->axes[XBOX_ANALOG_LEFT_JOY_X];
 		Yraw = msg->axes[XBOX_ANALOG_LEFT_JOY_Y];
 
@@ -159,8 +179,8 @@ private:
 		R = (V+W) /2;
 		L= (V-W)/2;
 		auto message = robot_msgs::msg::DriveMessage();
-		message.right_motor_speed = R;
-		message.left_motor_speed = L;
+		message.right_motor_speed = R * _speedFactor;
+		message.left_motor_speed = L * _speedFactor;
 		drive_publisher_->publish(message);
 		RCLCPP_DEBUG(this->get_logger(), "Xraw='%1.3f', Yraw='%1.3f',\n X='%1.3f', Y='%1.3f',\n V='%1.3f', W='%1.3f',\n R='%1.3f', L='%1.3f'",Xraw, Yraw, X, Y, V, W, R, L );
 	}
