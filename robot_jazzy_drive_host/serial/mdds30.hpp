@@ -20,7 +20,7 @@ public:
 	};
 
 	unsigned char DRIVE_COMMAND = 85;
-	MDDS30(char* dev,unsigned int addr = 0, int baud=115200);
+	MDDS30(const char* dev,unsigned int addr = 0, int baud=115200);
 	~MDDS30();
 
 
@@ -30,7 +30,7 @@ private:
 
 
 	short range_map(short  x,short  in_min,short  in_max,short  out_min,short  out_max);
-	const char _dev[256];
+	char _dev[256];
 	int _serialDeviceFd;
 	int _address;
 	int _baud;

@@ -6,13 +6,15 @@
 #include "rcutils/error_handling.h"
 
 
-MDDS30::MDDS30(char* dev,unsigned int addr, int baud)
-: _dev(dev),
+MDDS30::MDDS30(const char* dev,unsigned int addr, int baud)
+:
   _serialDeviceFd(0),
   _address(addr),
   _baud(baud)
 {
+	int length = strlen(dev);
 
+	strncpy(_dev, dev, length);
 
 }
 
@@ -29,7 +31,9 @@ bool MDDS30::initialize()
 {
 
 	bool result = true;
-
+#if TRACE_MDDS30
+	printf("serial device = %s\n",_dev);
+#endif
 	_serialDeviceFd = serialOpen(_dev, _baud);
 #if TRACE_MDDS30
 	printf("serial device handle = %d\n",_serialDeviceFd);
@@ -40,8 +44,13 @@ bool MDDS30::initialize()
 		result = false;
 	} else
 	{
+
+#if TRACE_MDDS30
+	printf("Writing setup bit\n");
+#endif
 		//Initialize Driver
 		serialPutchar(_serialDeviceFd, 0x80);
+		serialFlush(_serialDeviceFd);
 	}
 
 	return result;

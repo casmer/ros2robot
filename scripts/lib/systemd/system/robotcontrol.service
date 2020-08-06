@@ -1,0 +1,11 @@
+[Unit]
+Description=Controller for robot
+
+[Service]
+WorkingDirectory=/home/robot/
+ExecStart=/home/robot/runmodule.sh
+StanddardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

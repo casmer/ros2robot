@@ -1,0 +1,11 @@
+[Unit]
+Description=Webcam broadcaster for robot
+
+[Service]
+WorkingDirectory=/home/robot/gst-rtsp-server/examples
+ExecStart=/home/robot/gst-rtsp-server/examples/gst-server.sh
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

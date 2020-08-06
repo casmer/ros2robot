@@ -17,9 +17,10 @@ find_package(robot_msgs REQUIRED)
 
 ament_export_dependencies(rosidl_default_runtime)
 
-add_executable(drive_host robot_drive_host.cpp 
-
-pwm/pca6895.cpp pwm/pca6895.hpp)
+add_executable(drive_host 
+  robot_drive_host.cpp 
+  pwm/pca6895.cpp pwm/pca6895.hpp
+  serial/mdds30.cpp serial/mdds30.hpp)
 ament_target_dependencies(drive_host rclcpp robot_msgs WiringPi)
 target_link_libraries(drive_host ${WIRINGPI_LIBRARIES})
 

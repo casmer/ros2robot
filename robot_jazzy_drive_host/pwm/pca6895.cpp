@@ -148,6 +148,34 @@ short PCA6895::angle_to_analog(short angle)
 	return analog_value;
 }
 
+short PCA6895::speed_to_analog(unsigned int angle)
+{
+	unsigned int pulse_wide =0;
+	short	analog_value =0;
+
+	pulse_wide =	range_map(angle, PWM_MIN_PULSE_WIDTH, PWM_MAX_PULSE_WIDTH, PWM_MIN_PULSE_WIDTH, PWM_MAX_PULSE_WIDTH);
+	analog_value = ((unsigned int)pulse_wide) * PWM_FREQUENCY * 4096 / 1000000 ;
+#if TRACE_PCA6895
+	printf("writing values:pulse_wide: %d, analog_value:%d\n", pulse_wide, analog_value);
+#endif
+	return analog_value;
+}
+
+
+bool PCA6895::setPwmAsSpeed(unsigned short pinNumber, unsigned int speed)
+{
+	bool success=false;
+	if ( pinNumber<=15)
+	{
+		unsigned short analog_angle = speed_to_analog(speed);
+#if TRACE_PCA6895
+		printf("writing values:pin: %d, angle:%d, analog_angle: %d\n", pinNumber, angle, analog_angle);
+#endif
+		setPwm(pinNumber,0, analog_angle);
+	}
+	return success;
+}
+
 bool PCA6895::setPwmAsAngle(unsigned short pinNumber, unsigned short angle)
 {
 	bool success=false;
