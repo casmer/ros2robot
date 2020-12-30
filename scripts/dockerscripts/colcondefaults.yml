@@ -1,0 +1,3 @@
+build:
+	G: "Eclipse CDT4 - Unix Makefiles"
+	packages-select-regex:*
