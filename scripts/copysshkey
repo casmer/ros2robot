@@ -1,4 +1,5 @@
 #!/bin/bash
 host=$1
-ssh robot@$host mkdir -p .ssh
-cat ~/.ssh/id_rsa.pub | ssh robot@$host 'cat >> .ssh/authorized_keys'
+username=$2
+ssh $username@$host mkdir -p .ssh
+cat ~/.ssh/id_rsa.pub | ssh $username@$host 'cat >> .ssh/authorized_keys'
