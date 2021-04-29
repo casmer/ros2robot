@@ -1,0 +1,3 @@
+{
+"dependencies": ["lalosoft_robot_shared", "lalosoft_robot_msgs"]
+}
