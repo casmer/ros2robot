@@ -1,9 +1,9 @@
 [Unit]
-Description=Controller for robot
+Description=Drive Host for robot
 
 [Service]
 WorkingDirectory=/home/robot/
-ExecStart=/home/robot/runmodule.sh
+ExecStart=/opt/cotsbot/rundrivehost.sh
 StanddardOutput=syslog
 StandardError=syslog
 

@@ -15,15 +15,15 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/FindWiring
 find_package(WiringPi REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(robot_msgs REQUIRED)
+find_package(lalosoft_robot_msgs REQUIRED)
+find_package(lalosoft_robot_shared REQUIRED)
 
 ament_export_dependencies(rosidl_default_runtime)
 
 add_executable(drive_host 
   robot_drive_host.cpp 
-  pwm/pca6895.cpp pwm/pca6895.hpp
-  serial/mdds30.cpp serial/mdds30.hpp)
-ament_target_dependencies(drive_host rclcpp robot_msgs WiringPi)
+  )
+ament_target_dependencies(drive_host rclcpp lalosoft_robot_shared lalosoft_robot_msgs WiringPi)
 target_link_libraries(drive_host ${WIRINGPI_LIBRARIES})
 
 

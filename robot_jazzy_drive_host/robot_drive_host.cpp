@@ -17,10 +17,10 @@
 #include <mutex>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "pwm/pca6895.hpp"
-#include "serial/mdds30.hpp"
-#include "robot_msgs/msg/drive_message.hpp"
-#include "robot_msgs/msg/pan_tilt.hpp"
+#include "pca6895.hpp"
+#include "mdds30.hpp"
+#include "lalosoft_robot_msgs/msg/drive_message.hpp"
+#include "lalosoft_robot_msgs/msg/pan_tilt.hpp"
 #include "SimpleTimer.hpp"
 #include "wiringPi.h"
 
@@ -33,17 +33,17 @@ public:
 	RobotDriveHost()
 : Node("RobotDriveHost")
 {
-		subscription_ = this->create_subscription<robot_msgs::msg::DriveMessage>(
+		subscription_ = this->create_subscription<lalosoft_robot_msgs::msg::DriveMessage>(
 				"LalosoftDriveCommand", 10, std::bind(&RobotDriveHost::topic_callback, this, _1));
 
-		pantilt_subscription_ = this->create_subscription<robot_msgs::msg::PanTilt>(
+		pantilt_subscription_ = this->create_subscription<lalosoft_robot_msgs::msg::PanTilt>(
 				"LalosoftPanTilt", 10, std::bind(&RobotDriveHost::pantilt_callback, this, _1));
 
 
 		RCLCPP_INFO(get_logger(), "Setting severity threshold to DEBUG");
 		if (!_pca6895.initialize())
 		{
-			RCLCPP_ERROR(get_logger(), "Motor HAT failed to Initialize!");
+			RCLCPP_ERROR(get_logger(), "PWM controller failed to Initialize!");
 		}
 //		_mdds30 = new MDDS30("/dev/ttyAMA0", 0, 115200);
 //		if (!_mdds30->initialize())
@@ -78,8 +78,8 @@ public:
 	const int PAN_MAX_VERTICAL_ANGLE   =  180;
 private:
 
-	rclcpp::Subscription<robot_msgs::msg::DriveMessage>::SharedPtr subscription_;
-	rclcpp::Subscription<robot_msgs::msg::PanTilt>::SharedPtr pantilt_subscription_;
+	rclcpp::Subscription<lalosoft_robot_msgs::msg::DriveMessage>::SharedPtr subscription_;
+	rclcpp::Subscription<lalosoft_robot_msgs::msg::PanTilt>::SharedPtr pantilt_subscription_;
 	std::mutex _motorSpeedLock;
 	PCA6895 _pca6895;
 //	MDDS30* _mdds30;
@@ -120,7 +120,7 @@ private:
 
 	}
 
-	void topic_callback(const robot_msgs::msg::DriveMessage::SharedPtr message)
+	void topic_callback(const lalosoft_robot_msgs::msg::DriveMessage::SharedPtr message)
 	{
 
 		std::lock_guard<std::mutex> lock (_motorSpeedLock);
@@ -157,7 +157,7 @@ private:
 	}
 
 
-	void pantilt_callback(const robot_msgs::msg::PanTilt::SharedPtr message)
+	void pantilt_callback(const lalosoft_robot_msgs::msg::PanTilt::SharedPtr message)
 	{
 		if ((_pan_horizontal_angle != message->hortizontal_angle) ||
 				(_pan_vertical_angle != message->vertical_angle))

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5)
 project(lalosoft_robot_drive_host)
-set(robot_msgs_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../install/share/robot_msgs/cmake")
+
 # Default to C++14
 set(WiringPi_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/")
 if(NOT CMAKE_CXX_STANDARD)
@@ -14,12 +14,13 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/FindWiring
 find_package(WiringPi REQUIRED)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(robot_msgs REQUIRED)
+find_package(lalosoft_robot_msgs REQUIRED)
+find_package(lalosoft_robot_shared REQUIRED)
 
 ament_export_dependencies(rosidl_default_runtime)
 
-add_executable(drive_host robot_drive_host.cpp motor_hat/ugeek_motor_hat.cpp motor_hat/ugeek_motor_hat.hpp)
-ament_target_dependencies(drive_host rclcpp robot_msgs WiringPi)
+add_executable(drive_host robot_drive_host.cpp)
+ament_target_dependencies(drive_host rclcpp lalosoft_robot_msgs lalosoft_robot_shared WiringPi)
 target_link_libraries(drive_host ${WIRINGPI_LIBRARIES})
 
 

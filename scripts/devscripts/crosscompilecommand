@@ -1,0 +1,1 @@
+ros_cross_compile /home/caseyg/ros_dev --arch aarch64 --os ubuntu --rosdistro dashing --skip-rosdep-keys "robot_msgs robot_shared" --custom-setup-script /home/caseyg/ros_dev/src/ros2robot/scripts/dockerscripts/custom_setup.sh

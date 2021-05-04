@@ -1,0 +1,1 @@
+colcon build --merge-install --cmake-force-configure --cmake-args -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug $1

@@ -2,8 +2,8 @@
 Description=Webcam broadcaster for robot
 
 [Service]
-WorkingDirectory=/home/robot/gst-rtsp-server/examples
-ExecStart=/home/robot/gst-rtsp-server/examples/gst-server.sh
+WorkingDirectory=/opt/cotsbot/
+ExecStart=/opt/cotsbot/runrtspserver.sh
 StandardOutput=syslog
 StandardError=syslog
 

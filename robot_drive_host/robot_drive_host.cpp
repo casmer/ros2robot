@@ -17,8 +17,12 @@
 #include <mutex>
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
-#include "motor_hat/ugeek_motor_hat.hpp"
-#include "robot_msgs/msg/drive_message.hpp"
+
+#include "pca6895.hpp"
+#include "ugeek_motor_hat.hpp"
+
+#include "lalosoft_robot_msgs/msg/drive_message.hpp"
+#include "lalosoft_robot_msgs/msg/pan_tilt.hpp"
 #include "SimpleTimer.hpp"
 
 using std::placeholders::_1;
@@ -30,15 +34,24 @@ public:
 	RobotDriveHost()
 : Node("RobotDriveHost")
 {
-		subscription_ = this->create_subscription<robot_msgs::msg::DriveMessage>(
+		subscription_ = this->create_subscription<lalosoft_robot_msgs::msg::DriveMessage>(
 				"LalosoftDriveCommand", 10, std::bind(&RobotDriveHost::topic_callback, this, _1));
 
+		pantilt_subscription_ = this->create_subscription<lalosoft_robot_msgs::msg::PanTilt>(
+					"LalosoftPanTilt", 10, std::bind(&RobotDriveHost::pantilt_callback, this, _1));
 
 		RCLCPP_INFO(get_logger(), "Setting severity threshold to DEBUG");
 		if (!_motorHat.initialize())
 		{
 			RCLCPP_ERROR(get_logger(), "Motor HAT failed to Initialize!");
 		}
+
+		if (!_pca6895.initialize())
+		{
+			RCLCPP_ERROR(get_logger(), "PWM Controller failed to Initialize!");
+		}
+
+
 		driveCheck_ = this->create_wall_timer(
 				500ms, std::bind(&RobotDriveHost::timer_callback, this));
 }
@@ -47,15 +60,25 @@ public:
 		setMotor(0, 0);
 		setMotor(1, 0);
 	}
+
+	const int PAN_MIN_HORIZONTAL_ANGLE = 0;
+	const int PAN_MAX_HORIZONTAL_ANGLE =  180;
+	const int PAN_MIN_VERTICAL_ANGLE   = 0;
+	const int PAN_MAX_VERTICAL_ANGLE   =  180;
 private:
 
-	rclcpp::Subscription<robot_msgs::msg::DriveMessage>::SharedPtr subscription_;
+	rclcpp::Subscription<lalosoft_robot_msgs::msg::DriveMessage>::SharedPtr subscription_;
+	rclcpp::Subscription<lalosoft_robot_msgs::msg::PanTilt>::SharedPtr pantilt_subscription_;
 	UGeek_Motor_Hat _motorHat;
+	PCA6895 _pca6895;
 	std::mutex _motorSpeedLock;
 	SystemSimpleTimer _timer;
 	rclcpp::TimerBase::SharedPtr driveCheck_;
 	int _leftMotorSpeed;
 	int _rightMotorSpeed;
+
+	int _pan_horizontal_angle;
+	int _pan_vertical_angle;
 
 	void setMotor(int number, int motor_speed)
 	{
@@ -93,7 +116,7 @@ private:
 
 	}
 
-	void topic_callback(const robot_msgs::msg::DriveMessage::SharedPtr message)
+	void topic_callback(const lalosoft_robot_msgs::msg::DriveMessage::SharedPtr message)
 	{
 		RCLCPP_INFO(this->get_logger(), "Left: '%d', Right: '%d'",message->left_motor_speed, message->right_motor_speed);
 		std::lock_guard<std::mutex> lock (_motorSpeedLock);
@@ -104,6 +127,38 @@ private:
 		setMotor(1, message->left_motor_speed);
 
 	}
+
+	void pantilt_callback(const lalosoft_robot_msgs::msg::PanTilt::SharedPtr message)
+		{
+			if ((_pan_horizontal_angle != message->hortizontal_angle) ||
+					(_pan_vertical_angle != message->vertical_angle))
+			{
+				RCLCPP_INFO(this->get_logger(), "hortizontal_angle: '%d', vertical_angle: '%d'",message->hortizontal_angle, message->vertical_angle);
+			}
+
+			_pan_horizontal_angle = message->hortizontal_angle;
+			_pan_vertical_angle = message->vertical_angle;
+
+
+			if (_pan_horizontal_angle<PAN_MIN_HORIZONTAL_ANGLE)
+			{
+				_pan_horizontal_angle=PAN_MIN_HORIZONTAL_ANGLE;
+			} else if (_pan_horizontal_angle>PAN_MAX_HORIZONTAL_ANGLE)
+			{
+				_pan_horizontal_angle=PAN_MAX_HORIZONTAL_ANGLE;
+			}
+			if (_pan_vertical_angle<PAN_MIN_VERTICAL_ANGLE)
+			{
+				_pan_vertical_angle=PAN_MIN_VERTICAL_ANGLE;
+			} else if (_pan_vertical_angle>PAN_MAX_VERTICAL_ANGLE)
+			{
+				_pan_vertical_angle=PAN_MAX_VERTICAL_ANGLE;
+			}
+
+			_pca6895.setPwmAsAngle(0, _pan_horizontal_angle);
+			_pca6895.setPwmAsAngle(1, _pan_vertical_angle);
+		}
+
 
 	void timer_callback()
 	{

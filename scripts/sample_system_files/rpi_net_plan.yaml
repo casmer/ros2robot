@@ -1,0 +1,20 @@
+#need to update wifi passwords, then either reboot or "netplan apply"
+#this file should be in /etc/netplan
+network:
+    ethernets:
+        eth0:
+            dhcp4: true
+            optional: true
+    wifis:
+        wlan0:
+            dhcp4: true
+            optional: true
+            access-points:
+                 Manbuilding:
+                   password: "password"
+                 ManPuddlePark:
+                   password: "password"
+                 TheGregoires:
+                   password: "password"
+    version: 2
+

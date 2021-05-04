@@ -18,8 +18,8 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 #include "sensor_msgs/msg/joy.hpp"
-#include "robot_msgs/msg/drive_message.hpp"
-#include "robot_msgs/msg/pan_tilt.hpp"
+#include "lalosoft_robot_msgs/msg/drive_message.hpp"
+#include "lalosoft_robot_msgs/msg/pan_tilt.hpp"
 #include "xboxc_constants.hpp"
 
 using std::placeholders::_1;
@@ -34,12 +34,12 @@ public:
 	RobotControlHost()
 : Node("RobotControlHost"), count_(0)
 {
-		drive_publisher_ = this->create_publisher<robot_msgs::msg::DriveMessage>("LalosoftDriveCommand", 10);
+		drive_publisher_ = this->create_publisher<lalosoft_robot_msgs::msg::DriveMessage>("LalosoftDriveCommand", 10);
 
 		joy_subscription_ = this->create_subscription<sensor_msgs::msg::Joy>(
 				"/joy", 10, std::bind(&RobotControlHost::joy_callback, this, _1));
 
-		pantilt_publisher_ = this->create_publisher<robot_msgs::msg::PanTilt>("LalosoftPanTilt", 10);
+		pantilt_publisher_ = this->create_publisher<lalosoft_robot_msgs::msg::PanTilt>("LalosoftPanTilt", 10);
 		timer_ = this->create_wall_timer(
 				5000ms, std::bind(&RobotControlHost::timer_callback, this));
 		pantilt_timer_ = this->create_wall_timer(
@@ -53,8 +53,8 @@ private:
 
 	rclcpp::TimerBase::SharedPtr timer_;
 	rclcpp::TimerBase::SharedPtr pantilt_timer_;
-	rclcpp::Publisher<robot_msgs::msg::DriveMessage>::SharedPtr drive_publisher_;
-	rclcpp::Publisher<robot_msgs::msg::PanTilt>::SharedPtr pantilt_publisher_;
+	rclcpp::Publisher<lalosoft_robot_msgs::msg::DriveMessage>::SharedPtr drive_publisher_;
+	rclcpp::Publisher<lalosoft_robot_msgs::msg::PanTilt>::SharedPtr pantilt_publisher_;
 	rclcpp::Subscription<sensor_msgs::msg::Joy>::SharedPtr joy_subscription_;
 	size_t count_;
 	std::mutex _panTiltSpeedLock;
@@ -101,7 +101,7 @@ private:
 		}
 		int send_horizontal_angle = (int)_pan_horizontal_angle;
 		int send_vertical_angle = (int)_pan_vertical_angle;
-		auto message = robot_msgs::msg::PanTilt();
+		auto message = lalosoft_robot_msgs::msg::PanTilt();
 		message.hortizontal_angle = send_horizontal_angle;
 		message.vertical_angle = send_vertical_angle;
 		pantilt_publisher_->publish(message);
@@ -178,7 +178,7 @@ private:
 		W= (100-abs(Y)) * (X/100) + X;
 		R = (V+W) /2;
 		L= (V-W)/2;
-		auto message = robot_msgs::msg::DriveMessage();
+		auto message = lalosoft_robot_msgs::msg::DriveMessage();
 		message.right_motor_speed = R * _speedFactor;
 		message.left_motor_speed = L * _speedFactor;
 		drive_publisher_->publish(message);
