@@ -1,0 +1,13 @@
+#!/bin/bash
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+cd ${SCRIPT_DIR}/../../../..
+
+WHEREIS=$(whereis ros2)
+if [ "${WHEREIS:6}" == "/opt/ros/foxy/bin/ros2" ] ; then
+	echo "Found ROS2, using that"
+else
+    echo "ROS2 not found, setting up environment"
+    . /opt/ros/foxy/setup.bash
+fi
+colcon build --merge-install --cmake-force-configure --cmake-args -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -G"Eclipse CDT4 - Unix Makefiles" -DCMAKE_BUILD_TYPE=Debug $1

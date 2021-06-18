@@ -26,6 +26,8 @@
 
 using std::placeholders::_1;
 using namespace std::chrono_literals;
+#define RIGHT_MOTOR_PWM 4
+#define LEFT_MOTOR_PWM 5
 
 class RobotDriveHost : public rclcpp::Node
 {
@@ -35,10 +37,6 @@ public:
 {
 		subscription_ = this->create_subscription<lalosoft_robot_msgs::msg::DriveMessage>(
 				"LalosoftDriveCommand", 10, std::bind(&RobotDriveHost::topic_callback, this, _1));
-
-		pantilt_subscription_ = this->create_subscription<lalosoft_robot_msgs::msg::PanTilt>(
-				"LalosoftPanTilt", 10, std::bind(&RobotDriveHost::pantilt_callback, this, _1));
-
 
 		RCLCPP_INFO(get_logger(), "Setting severity threshold to DEBUG");
 		if (!_pca6895.initialize())
@@ -58,14 +56,14 @@ public:
 		RCLCPP_INFO(get_logger(), "Setting up pin");
 		driveCheck_ = this->create_wall_timer(
 				500ms, std::bind(&RobotDriveHost::timer_callback, this));
-		setMotor(2, 1500);
-		setMotor(3, 1500);
+		setMotor(RIGHT_MOTOR_PWM, 1500);
+		setMotor(LEFT_MOTOR_PWM, 1500);
 
 }
 	~RobotDriveHost()
 	{
-		setMotor(2, 1500);
-		setMotor(3, 1500);
+		setMotor(RIGHT_MOTOR_PWM, 1500);
+		setMotor(LEFT_MOTOR_PWM, 1500);
 //		if (_mdds30)
 //		{
 //			delete _mdds30;
@@ -79,7 +77,7 @@ public:
 private:
 
 	rclcpp::Subscription<lalosoft_robot_msgs::msg::DriveMessage>::SharedPtr subscription_;
-	rclcpp::Subscription<lalosoft_robot_msgs::msg::PanTilt>::SharedPtr pantilt_subscription_;
+
 	std::mutex _motorSpeedLock;
 	PCA6895 _pca6895;
 //	MDDS30* _mdds30;
@@ -87,8 +85,6 @@ private:
 	rclcpp::TimerBase::SharedPtr driveCheck_;
 	int _leftMotorSpeed;
 	int _rightMotorSpeed;
-	int _pan_horizontal_angle;
-	int _pan_vertical_angle;
 
 	void setMotor(int number, int motor_speed)
 	{
@@ -128,8 +124,8 @@ private:
 
 		int leftspeed = message->left_motor_speed == 0 ? 1500 : range_map(message->left_motor_speed+100, 0, 200, 600, 2400);
 		int rightspeed =message->right_motor_speed == 0 ? 1500 : range_map(message->right_motor_speed+100, 0, 200, 600, 2400);
-				setMotor(2,rightspeed );
-				setMotor(3, leftspeed);
+				setMotor(RIGHT_MOTOR_PWM,rightspeed );
+				setMotor(LEFT_MOTOR_PWM, leftspeed);
 
 		if ((_leftMotorSpeed != message->left_motor_speed) ||
 				(_rightMotorSpeed != message->right_motor_speed))
@@ -157,37 +153,6 @@ private:
 	}
 
 
-	void pantilt_callback(const lalosoft_robot_msgs::msg::PanTilt::SharedPtr message)
-	{
-		if ((_pan_horizontal_angle != message->hortizontal_angle) ||
-				(_pan_vertical_angle != message->vertical_angle))
-		{
-			RCLCPP_INFO(this->get_logger(), "hortizontal_angle: '%d', vertical_angle: '%d'",message->hortizontal_angle, message->vertical_angle);
-		}
-
-		_pan_horizontal_angle = message->hortizontal_angle;
-		_pan_vertical_angle = message->vertical_angle;
-
-
-		if (_pan_horizontal_angle<PAN_MIN_HORIZONTAL_ANGLE)
-		{
-			_pan_horizontal_angle=PAN_MIN_HORIZONTAL_ANGLE;
-		} else if (_pan_horizontal_angle>PAN_MAX_HORIZONTAL_ANGLE)
-		{
-			_pan_horizontal_angle=PAN_MAX_HORIZONTAL_ANGLE;
-		}
-		if (_pan_vertical_angle<PAN_MIN_VERTICAL_ANGLE)
-		{
-			_pan_vertical_angle=PAN_MIN_VERTICAL_ANGLE;
-		} else if (_pan_vertical_angle>PAN_MAX_VERTICAL_ANGLE)
-		{
-			_pan_vertical_angle=PAN_MAX_VERTICAL_ANGLE;
-		}
-
-		_pca6895.setPwmAsAngle(0, _pan_horizontal_angle);
-		_pca6895.setPwmAsAngle(1, _pan_vertical_angle);
-	}
-
 	void timer_callback()
 	{
 		std::lock_guard<std::mutex> lock (_motorSpeedLock);
@@ -195,8 +160,8 @@ private:
 		if (actual_wait_time > 500 && (_leftMotorSpeed!=0 && _rightMotorSpeed!=0))
 		{
 			RCLCPP_INFO(this->get_logger(), "No new command message, stopping motors.");
-			setMotor(2, 1500);
-		    setMotor(3, 1500);
+			setMotor(RIGHT_MOTOR_PWM, 1500);
+		    setMotor(LEFT_MOTOR_PWM, 1500);
 			_leftMotorSpeed=0;
 			_rightMotorSpeed=0;
 		}

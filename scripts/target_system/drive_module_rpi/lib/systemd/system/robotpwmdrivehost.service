@@ -1,0 +1,11 @@
+[Unit]
+Description=PWM Drive Host for robot
+
+[Service]
+WorkingDirectory=/home/robot/
+ExecStart=/opt/cotsbot/runpwmdrivehost.sh
+StanddardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

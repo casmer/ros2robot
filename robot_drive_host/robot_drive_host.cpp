@@ -22,7 +22,7 @@
 #include "ugeek_motor_hat.hpp"
 
 #include "lalosoft_robot_msgs/msg/drive_message.hpp"
-#include "lalosoft_robot_msgs/msg/pan_tilt.hpp"
+
 #include "SimpleTimer.hpp"
 
 using std::placeholders::_1;
@@ -37,8 +37,6 @@ public:
 		subscription_ = this->create_subscription<lalosoft_robot_msgs::msg::DriveMessage>(
 				"LalosoftDriveCommand", 10, std::bind(&RobotDriveHost::topic_callback, this, _1));
 
-		pantilt_subscription_ = this->create_subscription<lalosoft_robot_msgs::msg::PanTilt>(
-					"LalosoftPanTilt", 10, std::bind(&RobotDriveHost::pantilt_callback, this, _1));
 
 		RCLCPP_INFO(get_logger(), "Setting severity threshold to DEBUG");
 		if (!_motorHat.initialize())
@@ -68,7 +66,7 @@ public:
 private:
 
 	rclcpp::Subscription<lalosoft_robot_msgs::msg::DriveMessage>::SharedPtr subscription_;
-	rclcpp::Subscription<lalosoft_robot_msgs::msg::PanTilt>::SharedPtr pantilt_subscription_;
+
 	UGeek_Motor_Hat _motorHat;
 	PCA6895 _pca6895;
 	std::mutex _motorSpeedLock;
@@ -128,36 +126,7 @@ private:
 
 	}
 
-	void pantilt_callback(const lalosoft_robot_msgs::msg::PanTilt::SharedPtr message)
-		{
-			if ((_pan_horizontal_angle != message->hortizontal_angle) ||
-					(_pan_vertical_angle != message->vertical_angle))
-			{
-				RCLCPP_INFO(this->get_logger(), "hortizontal_angle: '%d', vertical_angle: '%d'",message->hortizontal_angle, message->vertical_angle);
-			}
 
-			_pan_horizontal_angle = message->hortizontal_angle;
-			_pan_vertical_angle = message->vertical_angle;
-
-
-			if (_pan_horizontal_angle<PAN_MIN_HORIZONTAL_ANGLE)
-			{
-				_pan_horizontal_angle=PAN_MIN_HORIZONTAL_ANGLE;
-			} else if (_pan_horizontal_angle>PAN_MAX_HORIZONTAL_ANGLE)
-			{
-				_pan_horizontal_angle=PAN_MAX_HORIZONTAL_ANGLE;
-			}
-			if (_pan_vertical_angle<PAN_MIN_VERTICAL_ANGLE)
-			{
-				_pan_vertical_angle=PAN_MIN_VERTICAL_ANGLE;
-			} else if (_pan_vertical_angle>PAN_MAX_VERTICAL_ANGLE)
-			{
-				_pan_vertical_angle=PAN_MAX_VERTICAL_ANGLE;
-			}
-
-			_pca6895.setPwmAsAngle(0, _pan_horizontal_angle);
-			_pca6895.setPwmAsAngle(1, _pan_vertical_angle);
-		}
 
 
 	void timer_callback()

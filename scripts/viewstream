@@ -5,7 +5,7 @@ host=$1
 
 if [ -z "$host" ] ; then
   echo "using default host"
-  host=kidstank.local
+  host=cotsbotrott.local
 else
   echo "using alternate host $1"
   host=$1
