@@ -16,5 +16,5 @@ fi
 
 
 ./src/ros2robot/scripts/deployment/generate_drive_module_package.sh
-scp install_armhf.tar.gz root@$host:
-ssh root@$host 'mkdir deploy; cd deploy; tar -xzvf ../install_armhf.tar.gz; ./install_package.sh'
+scp install_aarch64.tar.gz root@$host:
+ssh root@$host 'mkdir deploy; cd deploy; tar -xzvf ../install_aarch64.tar.gz; ./install_package.sh'

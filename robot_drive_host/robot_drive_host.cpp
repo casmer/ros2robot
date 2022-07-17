@@ -38,15 +38,14 @@ public:
 				"LalosoftDriveCommand", 10, std::bind(&RobotDriveHost::topic_callback, this, _1));
 
 
-		RCLCPP_INFO(get_logger(), "Setting severity threshold to DEBUG");
 		if (!_motorHat.initialize())
 		{
 			RCLCPP_ERROR(get_logger(), "Motor HAT failed to Initialize!");
 		}
 
-		if (!_pca6895.initialize())
+		if (!_pca6895.initialize("/dev/i2c-1", 0x70))
 		{
-			RCLCPP_ERROR(get_logger(), "PWM Controller failed to Initialize!");
+			RCLCPP_ERROR(get_logger(), "PW M Controller failed to Initialize!");
 		}
 
 

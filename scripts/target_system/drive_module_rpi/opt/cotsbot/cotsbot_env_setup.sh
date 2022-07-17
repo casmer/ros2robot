@@ -1,4 +1,4 @@
-source /opt/ros/dashing/setup.bash
+source /opt/ros/foxy/setup.bash
 
 echo "loading /opt/cotsbot/cotsbot_env_vars.sh"
 . /opt/cotsbot/cotsbot_env_vars.sh

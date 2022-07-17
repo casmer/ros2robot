@@ -1,0 +1,15 @@
+[Unit]
+Description=Power Button Host for robot
+
+[Service]
+ExecStart=/usr/bin/python /opt/cotsbot/pishutdown.py
+WorkingDirectory=/opt/cotsbot/
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=pishutdown
+User=root
+Group=root
+
+[Install]
+WantedBy=multi-user.target

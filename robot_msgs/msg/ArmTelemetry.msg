@@ -1,0 +1,7 @@
+int32 arm_number
+int32 shoulder_hortizontal_angle
+int32 shoulder_vertical_angle
+int32 elbow_angle
+int32 wrist_bend_angle
+int32 write_rotation_angle
+int32 end_effector_position

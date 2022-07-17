@@ -4,7 +4,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd ${SCRIPT_DIR}/../../../..
 
 pwd
-platform=armhf
+platform=aarch64
 module_name=drive_module_rpi
 
 deploy_dir=deploy_build

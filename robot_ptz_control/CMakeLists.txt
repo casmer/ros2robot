@@ -21,7 +21,8 @@ find_package(lalosoft_robot_shared REQUIRED)
 ament_export_dependencies(rosidl_default_runtime)
 
 add_executable(ptz_host 
-  robot_ptz_host.cpp 
+  robot_ptz_host.cpp
+  robot_ptz_host.h 
   )
 ament_target_dependencies(ptz_host rclcpp lalosoft_robot_shared lalosoft_robot_msgs WiringPi)
 target_link_libraries(ptz_host ${WIRINGPI_LIBRARIES})

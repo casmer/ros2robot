@@ -1,0 +1,5 @@
+<launch>
+  <node pkg="lalosoft_robot_drive_host" exec="drive_host" output="screen" />
+  <node pkg="lalosoft_robot_ptz_host" exec="ptz_host" output="screen" />
+  <node pkg="lalosoft_robot_jazzy_drive_host" exec="drive_host" output="screen" />
+</launch>

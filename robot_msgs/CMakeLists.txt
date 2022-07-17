@@ -12,6 +12,8 @@ find_package(ament_cmake REQUIRED)
  set(msg_files
    "msg/DriveMessage.msg"
    "msg/PanTilt.msg"
+   "msg/ArmTelemetry.msg"
+   "msg/RobotHeartbeat.msg"
  )
  rosidl_generate_interfaces(${PROJECT_NAME}
    ${msg_files}

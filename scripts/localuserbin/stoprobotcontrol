@@ -1,0 +1,5 @@
+killall ros2
+killall control_host
+killall -9 joy_node
+ps -ef | grep ros
+

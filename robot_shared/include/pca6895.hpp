@@ -1,17 +1,18 @@
 
 #include <stdint.h>
 #include <wiringPiI2C.h>
+#include <string>
 #define TRACE_PCA6895 0
 class PCA6895
 {
 
 public:
 
-	PCA6895(unsigned int  addr = 0x70);
+	PCA6895();
 	~PCA6895();
 
 
-	bool initialize();
+	bool initialize(const char* i2c_dev, unsigned int  addr = 0x70, std::string node_name = "PCA6895");
 	bool setPwmAsAngle(unsigned short pinNumber, unsigned short angle);
 	bool setPwmAsSpeed(unsigned short pinNumber, unsigned int speed);
 
@@ -28,6 +29,7 @@ private:
 
 	unsigned int _i2cAddr;
 	int _i2cDeviceHandle;
+	std::string nodeName;
 };
 
 

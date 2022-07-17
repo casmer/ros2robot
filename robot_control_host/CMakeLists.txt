@@ -19,7 +19,7 @@ find_package(lalosoft_robot_msgs REQUIRED)
 ament_export_dependencies(rosidl_default_runtime lalosoft_robot_msgs)
 
 
-add_executable(control_host robot_control_host.cpp)
+add_executable(control_host robot_control_host.cpp robot_control_host.hpp)
 ament_target_dependencies(control_host rclcpp std_msgs sensor_msgs lalosoft_robot_msgs)
 
 

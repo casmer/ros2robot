@@ -6,6 +6,8 @@ WorkingDirectory=/opt/cotsbot/
 ExecStart=/opt/cotsbot/runrtspserver.sh
 StandardOutput=syslog
 StandardError=syslog
+User=root
+Group=root
 
 [Install]
 WantedBy=multi-user.target

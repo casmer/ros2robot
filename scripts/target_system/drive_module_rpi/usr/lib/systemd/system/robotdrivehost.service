@@ -1,11 +1,16 @@
 [Unit]
-Description=PTZ Host for robot
+Description=Drive Host for robot
 
 [Service]
 WorkingDirectory=/home/robot/
-ExecStart=/opt/cotsbot/runptzhost.sh
+ExecStart=/opt/cotsbot/rundrivehost.sh
+Restart=on-failure
+RestartSec=5s
 StanddardOutput=syslog
 StandardError=syslog
+User=root
+Group=root
+
 
 [Install]
 WantedBy=multi-user.target

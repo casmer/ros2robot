@@ -28,6 +28,7 @@ using std::placeholders::_1;
 using namespace std::chrono_literals;
 #define RIGHT_MOTOR_PWM 4
 #define LEFT_MOTOR_PWM 5
+#define BRAKE_CONTROL_PIN 26
 
 class RobotDriveHost : public rclcpp::Node
 {
@@ -38,8 +39,7 @@ public:
 		subscription_ = this->create_subscription<lalosoft_robot_msgs::msg::DriveMessage>(
 				"LalosoftDriveCommand", 10, std::bind(&RobotDriveHost::topic_callback, this, _1));
 
-		RCLCPP_INFO(get_logger(), "Setting severity threshold to DEBUG");
-		if (!_pca6895.initialize())
+		if (!_pca6895.initialize("/dev/i2c-1", 0x70))
 		{
 			RCLCPP_ERROR(get_logger(), "PWM controller failed to Initialize!");
 		}
@@ -48,11 +48,11 @@ public:
 //		{
 //			RCLCPP_ERROR(get_logger(), "MDDS30 failed to Initialize!");
 //		}
-		wiringPiSetup();
+		wiringPiSetupGpio();
 		RCLCPP_INFO(get_logger(), "Setting up pin");
-		pinMode(25, OUTPUT);
-		pullUpDnControl(25, PUD_UP );
-		digitalWrite(25, LOW);
+		pinMode(BRAKE_CONTROL_PIN, OUTPUT);
+		pullUpDnControl(BRAKE_CONTROL_PIN, PUD_UP );
+		digitalWrite(BRAKE_CONTROL_PIN, LOW);
 		RCLCPP_INFO(get_logger(), "Setting up pin");
 		driveCheck_ = this->create_wall_timer(
 				500ms, std::bind(&RobotDriveHost::timer_callback, this));
@@ -99,16 +99,16 @@ private:
 		{
 			if (motor_speed!=lastmotorspeed)
 			{
-				RCLCPP_INFO(this->get_logger(), "write 0");
+				RCLCPP_INFO(this->get_logger(), "Set Brake 0");
 			}
-			digitalWrite(25, 0);
+			digitalWrite(BRAKE_CONTROL_PIN, 0);
 		} else
 		{
 			if (motor_speed!=lastmotorspeed)
 			{
-				RCLCPP_INFO(this->get_logger(), "write 1");
+				RCLCPP_INFO(this->get_logger(), "Set Brake 1");
 			}
-			digitalWrite(25, 1);
+			digitalWrite(BRAKE_CONTROL_PIN, 1);
 		}
 		lastmotorspeed=motor_speed;
 

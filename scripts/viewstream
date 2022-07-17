@@ -10,5 +10,5 @@ else
   echo "using alternate host $1"
   host=$1
 fi
-gst-launch-1.0 -v playbin uri=rtsp://$host:8554/test uridecodebin0::source::latency=0
+gst-launch-1.0 -q -v playbin uri=rtsp://$host:8554/test uridecodebin0::source::latency=0
 

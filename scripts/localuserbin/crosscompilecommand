@@ -4,5 +4,6 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 cd ${SCRIPT_DIR}/../../../..
 
 pwd
-#ros_cross_compile /home/caseyg/ros_dev --arch armhf --os ubuntu --rosdistro foxy  --skip-rosdep-keys "robot_msgs robot_shared" --custom-setup-script /home/caseyg/ros_dev/src/ros2robot/scripts/dockerscripts/custom_setup.sh
-ros_cross_compile ./ --arch armhf --os ubuntu --rosdistro dashing --skip-rosdep-keys "robot_msgs robot_shared" --custom-setup-script /home/caseyg/ros_dev/src/ros2robot/scripts/dockerscripts/custom_setup.sh
+ros_cross_compile /home/caseyg/ros_dev --arch aarch64 --os ubuntu --rosdistro foxy  --skip-rosdep-keys "robot_msgs robot_shared" --custom-setup-script /home/caseyg/ros_dev/src/ros2robot/scripts/dockerscripts/custom_setup.sh --stages-skip gather_rosdeps sysroot
+
+#ros_cross_compile ./ --arch armhf --os ubuntu --rosdistro dashing --skip-rosdep-keys "robot_msgs robot_shared" --custom-setup-script /home/caseyg/ros_dev/src/ros2robot/scripts/dockerscripts/custom_setup.sh

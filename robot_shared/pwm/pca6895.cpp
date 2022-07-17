@@ -48,8 +48,11 @@
 #define PWM_INVRT       0x10
 #define PWM_OUTDRV      0x04
 
-PCA6895::PCA6895(unsigned int addr)
-: _i2cAddr(addr),
+
+using namespace rclcpp;
+
+PCA6895::PCA6895()
+: _i2cAddr(0),
   _i2cDeviceHandle(0)
 {
 
@@ -65,12 +68,15 @@ PCA6895::~PCA6895()
   }
 }
 
-bool PCA6895::initialize()
+bool PCA6895::initialize(const char* i2c_dev, unsigned int addr, std::string node_name)
 {
 
 	bool result = true;
-
-	_i2cDeviceHandle = wiringPiI2CSetupInterface("/dev/i2c-1", _i2cAddr);
+	_i2cAddr = addr;
+	nodeName=node_name;
+	_i2cDeviceHandle = wiringPiI2CSetupInterface(i2c_dev, _i2cAddr);
+	RCLCPP_INFO(get_logger(nodeName), "Initializing PCA6895");
+	RCLCPP_INFO(get_logger(nodeName), "Dev=%s, addr=%u", i2c_dev, addr);
 #if TRACE_PCA6895
 	printf("device handle = %d\n",_i2cDeviceHandle);
 #endif
